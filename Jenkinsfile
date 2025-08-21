@@ -2,17 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        DOCKER_USER = "${DOCKERHUB_CREDENTIALS_USR}"
-        DOCKER_PASS = "${DOCKERHUB_CREDENTIALS_PSW}"
-        BACKEND_IMAGE = "your-dockerhub-username/todo-backend"
-        FRONTEND_IMAGE = "your-dockerhub-username/todo-frontend"
+        BACKEND_IMAGE = "ayush319/todo-backend"
+        FRONTEND_IMAGE = "ayush319/todo-frontend"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Aayyuusshh-cloud/project4.git'
+                git branch: 'main', url: 'https://github.com/aayyuusshh-cloud/project4.git'
             }
         }
 
@@ -20,7 +17,7 @@ pipeline {
             steps {
                 sh '''
                 cd backend
-                docker build -t $BACKEND_IMAGE:${BUILD_NUMBER} .
+                docker build -t $BACKEND_IMAGE:${BUILD_NUMBER} -t $BACKEND_IMAGE:latest .
                 '''
             }
         }
@@ -29,7 +26,7 @@ pipeline {
             steps {
                 sh '''
                 cd frontend
-                docker build -t $FRONTEND_IMAGE:${BUILD_NUMBER} .
+                docker build -t $FRONTEND_IMAGE:${BUILD_NUMBER} -t $FRONTEND_IMAGE:latest .
                 '''
             }
         }
@@ -45,13 +42,18 @@ pipeline {
 
         stage('Push Images to DockerHub') {
             steps {
-                sh '''
-                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                docker push $BACKEND_IMAGE:${BUILD_NUMBER}
-                docker push $FRONTEND_IMAGE:${BUILD_NUMBER}
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                                  usernameVariable: 'DOCKER_USER',
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push $BACKEND_IMAGE:${BUILD_NUMBER}
+                    docker push $BACKEND_IMAGE:latest
+                    docker push $FRONTEND_IMAGE:${BUILD_NUMBER}
+                    docker push $FRONTEND_IMAGE:latest
+                    '''
+                }
             }
         }
     }
-}
 
