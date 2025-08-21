@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/aayyuusshh-cloud/project4.git'
+                git branch: 'main', url: 'https://github.com/Aayyuusshh-cloud/project4.git'
             }
         }
 
@@ -56,4 +56,5 @@ pipeline {
             }
         }
     }
+}
 
