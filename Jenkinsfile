@@ -46,13 +46,22 @@ pipeline {
                                                   usernameVariable: 'DOCKER_USER',
                                                   passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push $BACKEND_IMAGE:${BUILD_NUMBER}
-                    docker push $BACKEND_IMAGE:latest
-                    docker push $FRONTEND_IMAGE:${BUILD_NUMBER}
-                    docker push $FRONTEND_IMAGE:latest
+                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                     docker push $BACKEND_IMAGE:${BUILD_NUMBER}
+                     docker push $BACKEND_IMAGE:latest
+                     docker push $FRONTEND_IMAGE:${BUILD_NUMBER}
+                     docker push $FRONTEND_IMAGE:latest
                     '''
                 }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                kubectl set image deployment/backend-deployment backend=$BACKEND_IMAGE:${BUILD_NUMBER}
+                kubectl set image deployment/frontend-deployment frontend=$FRONTEND_IMAGE:${BUILD_NUMBER}
+                '''
             }
         }
     }
